@@ -55,3 +55,15 @@
 `org.msgpack:msgpack-core:0.8.17`
 
 版本号可有变化
+
+
+
+例子请参考
+
+https://github.com/Attect/EasyMessagePack/blob/master/test/EasyMessagePackTest.kt
+
+
+
+如果你需要对序列化后的二进制数据进行查错，可以使用我的另一个开源项目
+
+https://github.com/Attect/Framework666CacheDataXPreviewer
