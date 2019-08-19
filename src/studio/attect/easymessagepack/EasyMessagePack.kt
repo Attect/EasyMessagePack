@@ -628,7 +628,7 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
      * const/transient修饰的字段将会被跳过
      * 支持字段为null
      */
-    fun put(any: Any?) {
+    fun put(any: Any?): EasyMessagePack {
         when {
             isWriteRawDataType(any) -> writeAuto(any)
             any == null -> packer.packNil()
@@ -659,6 +659,7 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                 }
             }
         }
+        return this
     }
 
     /**
