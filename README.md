@@ -1,7 +1,9 @@
 # EasyMessagePack
 让数据更小，更快。
 
-这个库能够帮助你轻松将Bean数据通过MessagePack打包为二进制数据。而且是无key模式！效果比MessagePack官方宣传的只是比Json去掉几个标点符号效果要更好。
+MessagePack原生使用方法及其繁杂，使用此库可以通过一个方法即可序列化/反序列化。
+
+帮助你轻松将Bean数据通过MessagePack打包为二进制数据。而且是无key模式！效果比MessagePack官方宣传的只是比Json去掉几个标点符号效果要更好。
 
 此库由https://github.com/Attect/Android-Framework666的缓存引擎分离而来
 
