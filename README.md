@@ -5,7 +5,7 @@ MessagePack原生使用方法及其繁杂，使用此库可以通过一个方法
 
 帮助你轻松将Bean数据通过MessagePack打包为二进制数据。而且是无key模式！效果比MessagePack官方宣传的只是比Json去掉几个标点符号效果要更好。
 
-此库由https://github.com/Attect/Android-Framework666的缓存引擎分离而来
+此库由 https://github.com/Attect/Android-Framework666 的缓存引擎分离而来
 
 
 
