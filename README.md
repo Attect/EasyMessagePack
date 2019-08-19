@@ -44,7 +44,7 @@
 - 透明声明的变量不会被操作（Transient）
 - 静态变量不会被操作（const/static）
 - 内部类仅支持一层，即父类下直接使用子类，不支持跨类调用，也不支持在父类的子类A中使用弗雷的子类B
-- 严格的顺序，因为没有key，读写用的Bean中字段类型和数量一定要一致，如果你希望版本迭代，请参考https://github.com/Attect/Android-Framework666中关于缓存的有效性检查的实现
+- 严格的顺序，因为没有key，读写用的Bean中字段类型和数量一定要一致，如果你希望版本迭代，请参考 https://github.com/Attect/Android-Framework666 中关于缓存的有效性检查的实现
 
 
 
