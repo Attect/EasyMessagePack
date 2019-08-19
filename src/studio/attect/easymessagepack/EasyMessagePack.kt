@@ -19,7 +19,7 @@ import kotlin.collections.LinkedHashMap
  * 基于MsgPack
  * @author Attect
  */
-class EasyMessagePack(private val packer: MessagePacker = MessagePack.newDefaultBufferPacker())  {
+class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPacker())  {
     lateinit var unpacker: MessageUnpacker
 
     fun unpack(byteArray: ByteArray): EasyMessagePack {
