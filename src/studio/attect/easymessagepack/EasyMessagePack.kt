@@ -771,7 +771,9 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                 val arraySize = unpacker.unpackArrayHeader()
                 val arrayInstance = java.lang.reflect.Array.newInstance(clazz.componentType, arraySize) as Array<Any?>
                 for (i in 0 until arraySize) {
-                    arrayInstance[i] = get(clazz.componentType, owner)
+                    clazz.componentType?.let { componentType ->
+                        arrayInstance[i] = get(componentType, owner)
+                    }
                 }
                 return arrayInstance as T
             }
