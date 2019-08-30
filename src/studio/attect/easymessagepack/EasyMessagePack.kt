@@ -779,7 +779,7 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
             }
 
         } else if (isCustomPackData) { //如果是CustomPackData，走CustomPackData的读取逻辑
-            if (unpacker.unpackBoolean()) return null
+//            if (unpacker.unpackBoolean()) return null
             val data = clazz.newInstance() as CustomPackData
             data.unpackFrom(this)
             return data as T
