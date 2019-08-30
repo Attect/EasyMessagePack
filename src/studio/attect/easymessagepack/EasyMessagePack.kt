@@ -755,12 +755,8 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
      * 返回根据给定的类型以及实际读取的数据所生成的对象，或者为null
      */
     fun <T> get(clazz: Class<T>, owner: Any? = null): T? {
-        var isCustomPackData = false
-        clazz.interfaces.forEach {
-            if (it.canonicalName == CustomPackData::class.java.canonicalName) {
-                isCustomPackData = true
-            }
-        }
+        val isCustomPackData = CustomPackData::class.java.isAssignableFrom(clazz)
+
         val simpleType = simpleTypeByClass(clazz)
         if (simpleType != null) {
             if (simpleType != SIMPLE_TYPE_ARRAY) {
@@ -779,7 +775,6 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
             }
 
         } else if (isCustomPackData) { //如果是CustomPackData，走CustomPackData的读取逻辑
-//            if (unpacker.unpackBoolean()) return null
             val data = clazz.newInstance() as CustomPackData
             data.unpackFrom(this)
             return data as T
