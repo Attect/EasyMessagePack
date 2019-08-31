@@ -175,19 +175,20 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
         return shortArray
     }
 
-    fun putShortList(shortList: List<Shrot?>?): EasyMessagePack {
+    fun putShortList(shortList: List<Short?>?): EasyMessagePack {
         if (shortList == null) {
             packer.packNil()
         } else {
             packer.packArrayHeader(shortList.size)
             shortList.forEach { putShort(it) }
         }
+        return this
     }
 
-    fun getShortList(): ArrayList<Shrot?>? {
+    fun getShortList(): ArrayList<Short?>? {
         if (unpacker.tryUnpackNil()) return null
         val size = unpacker.unpackArrayHeader()
-        val arrayList = ArrayList<Shrot?>()
+        val arrayList = ArrayList<Short?>()
         for (i in 0 until size) {
             arrayList.add(getShort())
         }
