@@ -175,6 +175,24 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
         return shortArray
     }
 
+    fun putShortList(shortList: List<Shrot?>?): EasyMessagePack {
+        if (shortList == null) {
+            packer.packNil()
+        } else {
+            packer.packArrayHeader(shortList.size)
+            shortList.forEach { putShort(it) }
+        }
+    }
+
+    fun getShortList(): ArrayList<Shrot?>? {
+        if (unpacker.tryUnpackNil()) return null
+        val size = unpacker.unpackArrayHeader()
+        val arrayList = ArrayList<Shrot?>()
+        for (i in 0 until size) {
+            arrayList.add(getShort())
+        }
+        return arrayList
+    }
 
     fun putInt(int: Int?): EasyMessagePack {
         if (int == null) {
