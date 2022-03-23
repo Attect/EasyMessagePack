@@ -12,5 +12,7 @@
     <orderEntry type="library" name="com.google.code.gson:gson:2.8.6" level="project" />
     <orderEntry type="library" name="junit:junit:4.12" level="project" />
     <orderEntry type="library" name="org.msgpack:msgpack-core:0.8.22" level="project" />
+    <orderEntry type="library" name="msgpack.core" level="project" />
+    <orderEntry type="library" name="google.code.gson" level="project" />
   </component>
 </module>

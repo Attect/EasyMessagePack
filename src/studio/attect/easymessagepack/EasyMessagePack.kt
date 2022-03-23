@@ -5,6 +5,7 @@ import org.msgpack.core.MessagePack
 import org.msgpack.core.MessagePacker
 import org.msgpack.core.MessageUnpacker
 import java.io.InputStream
+import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.math.BigInteger
@@ -653,7 +654,11 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
             any == null -> packer.packNil()
             else -> {
                 packer.packBoolean(false) //此对象不为null，需要在读取时将此对象实例化
-                any::class.java.declaredFields.forEach { field ->
+                val targetClz = any::class.java
+                if(!fieldCache.containsKey(targetClz)){
+                    fieldCache[targetClz]=targetClz.declaredFields.sortedBy { it.name }
+                }
+                fieldCache[targetClz]?.forEach { field ->
                     if (!Modifier.isFinal(field.modifiers) && !Modifier.isTransient(field.modifiers)) {
                         //                    println("put field:${field.name} : ${field.genericType.typeName} ${field.genericType}")
                         val accessible = field.isAccessible
@@ -825,7 +830,11 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
 
                 if (instance != null) {
                     instance?.let { target ->
-                        target::class.java.declaredFields.forEach { field ->
+                        val targetClz = target::class.java
+                        if(!fieldCache.containsKey(targetClz)){
+                            fieldCache[targetClz]=targetClz.declaredFields.sortedBy { it.name }
+                        }
+                        fieldCache[targetClz]?.forEach { field ->
                             if (field.name != "this\$0" && unpacker.hasNext() && !Modifier.isFinal(field.modifiers) && !Modifier.isTransient(field.modifiers)) {
 //                                println("get field:${field.name} ${field.genericType.rawTypeName}")
                                 if (!unpacker.tryUnpackNil()) {
@@ -1154,5 +1163,6 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
         private const val SIMPLE_TYPE_ARRAY = 20
         private const val SIMPLE_TYPE_ANY = 21
 
+        private val fieldCache = hashMapOf<Class<*>,List<Field>>()
     }
 }

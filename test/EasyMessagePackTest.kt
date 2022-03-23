@@ -458,6 +458,11 @@ class EasyMessagePackTest {
         assert(userData == newUserData)
     }
 
+    @Test
+    fun putTwice(){
+        put()
+        put()
+    }
 
     class UserData constructor() {
         constructor(id: Int? = null, username: String? = null) : this() {
