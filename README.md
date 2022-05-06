@@ -48,8 +48,10 @@ MessagePack原生使用方法及其繁杂，使用此库可以通过一个方法
 - 静态变量不会被操作（const/static）
 - Kotlin委托不会被操作(final)
 - 内部类仅支持一层，即父类下直接使用子类，不支持跨类调用，也不支持在父类的子类A中使用父类的子类B
-- 严格的顺序，因为没有key，读写用的Bean中字段类型和数量一定要一致，如果你希望版本迭代，请参考 https://github.com/Attect/Android-Framework666/blob/master/framework666/src/main/java/studio/attect/framework666/extensions/Context.kt 中关于缓存的有效性检查的实现
-
+-
+严格的顺序，因为没有key，读写用的Bean中字段类型和数量一定要一致，如果你希望版本迭代，请参考 https://github.com/Attect/Android-Framework666/blob/master/framework666/src/main/java/studio/attect/framework666/extensions/Context.kt
+中关于缓存的有效性检查的实现
+- 为了避开线程安全问题，被操作的类内部成员将会被设置为public，如果需要确保访问安全，请自己在操作前和记录可访问状态，不再操作后还原状态。
 
 
 ## 使用

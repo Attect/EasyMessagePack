@@ -11,16 +11,13 @@ import java.lang.reflect.ParameterizedType
 import java.math.BigInteger
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.LinkedHashMap
 
 /**
  * 此处将数据打包成二进制数据，并负责将其还原
  * 基于MsgPack
  * @author Attect
  */
-class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPacker())  {
+class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPacker()) {
     lateinit var unpacker: MessageUnpacker
 
     fun unpack(byteArray: ByteArray): EasyMessagePack {
@@ -593,14 +590,14 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
         return this
     }
 
-    inline fun <reified T:CustomPackData> getArray(cls: Class<T>): Array<T?>? {
+    inline fun <reified T : CustomPackData> getArray(cls: Class<T>): Array<T?>? {
         if (unpacker.tryUnpackNil()) return null
         return Array(unpacker.unpackArrayHeader()) {
             return@Array getCustomPackData(cls)
         }
     }
 
-    inline fun <reified T:CustomPackData, reified K> getArray(clazz: Class<T>, owner: K): Array<T?>? {
+    inline fun <reified T : CustomPackData, reified K> getArray(clazz: Class<T>, owner: K): Array<T?>? {
         if (unpacker.tryUnpackNil()) return null
         return Array(unpacker.unpackArrayHeader()) {
             return@Array getCustomPackData(clazz, owner)
@@ -655,8 +652,11 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
             else -> {
                 packer.packBoolean(false) //此对象不为null，需要在读取时将此对象实例化
                 val targetClz = any::class.java
-                if(!fieldCache.containsKey(targetClz)){
-                    fieldCache[targetClz]=targetClz.declaredFields.sortedBy { it.name }
+                if (!fieldCache.containsKey(targetClz)) {
+                    fieldCache[targetClz] = targetClz.declaredFields.map {
+                        if (!it.isAccessible) it.isAccessible = true
+                        it
+                    }.sortedBy { it.name }
                 }
                 fieldCache[targetClz]?.forEach { field ->
                     if (!Modifier.isFinal(field.modifiers) && !Modifier.isTransient(field.modifiers)) {
@@ -831,11 +831,19 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                 if (instance != null) {
                     instance?.let { target ->
                         val targetClz = target::class.java
-                        if(!fieldCache.containsKey(targetClz)){
-                            fieldCache[targetClz]=targetClz.declaredFields.sortedBy { it.name }
+                        if (!fieldCache.containsKey(targetClz)) {
+                            fieldCache[targetClz] = targetClz.declaredFields.map {
+                                if (!it.isAccessible) {
+                                    it.isAccessible = true
+                                }
+                                it
+                            }.sortedBy { it.name }
                         }
                         fieldCache[targetClz]?.forEach { field ->
-                            if (field.name != "this\$0" && unpacker.hasNext() && !Modifier.isFinal(field.modifiers) && !Modifier.isTransient(field.modifiers)) {
+                            if (field.name != "this\$0" && unpacker.hasNext() && !Modifier.isFinal(field.modifiers) && !Modifier.isTransient(
+                                    field.modifiers
+                                )
+                            ) {
 //                                println("get field:${field.name} ${field.genericType.rawTypeName}")
                                 if (!unpacker.tryUnpackNil()) {
                                     if (field.genericType is ParameterizedType) {
@@ -855,11 +863,26 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                                             when (listType) {
                                                 is Class<*> -> {
                                                     when (list) {
-                                                        is ArrayList<Any?> -> for (i in 0 until listSize) list.add(get(listType, instance))
-                                                        is LinkedList<Any?> -> for (i in 0 until listSize) list.add(get(listType, instance))
+                                                        is ArrayList<Any?> -> for (i in 0 until listSize) list.add(
+                                                            get(
+                                                                listType,
+                                                                instance
+                                                            )
+                                                        )
+                                                        is LinkedList<Any?> -> for (i in 0 until listSize) list.add(
+                                                            get(
+                                                                listType,
+                                                                instance
+                                                            )
+                                                        )
                                                         else -> { //处理定义时写的是var field:List<Any?>的情况
                                                             list = ArrayList()
-                                                            for (i in 0 until listSize) list.add(get(listType, instance))
+                                                            for (i in 0 until listSize) list.add(
+                                                                get(
+                                                                    listType,
+                                                                    instance
+                                                                )
+                                                            )
                                                         }
                                                     }
                                                 }
@@ -879,16 +902,15 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                                                         )
                                                         else -> {
                                                             list = ArrayList()
-                                                            for (i in 0 until listSize) list.add(autoReadParameterizedType(instance, listType))
+                                                            for (i in 0 until listSize) list.add(
+                                                                autoReadParameterizedType(instance, listType)
+                                                            )
                                                         }
                                                     }
                                                 }
                                                 else -> println("not support ParameterizedType:$parameterizedType [0]")
                                             }
-                                            val accessible = field.isAccessible
-                                            if (!field.isAccessible) field.isAccessible = true
                                             field.set(instance, list)
-                                            field.isAccessible = accessible
                                         } else if (fieldType == SIMPLE_TYPE_MAP) {
                                             var map = fieldClass.newInstance() as Map<Any?, Any?>
                                             val mapSize = unpacker.unpackMapHeader()
@@ -906,12 +928,14 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                                                     for (i in 0 until mapSize) {
                                                         when (keyType) {
                                                             is Class<*> -> keyValue = get(keyType, instance)
-                                                            is ParameterizedType -> keyValue = autoReadParameterizedType(instance, keyType)
+                                                            is ParameterizedType -> keyValue =
+                                                                autoReadParameterizedType(instance, keyType)
                                                             else -> println("not support map key")
                                                         }
                                                         when (valueType) {
                                                             is Class<*> -> valueValue = get(valueType, instance)
-                                                            is ParameterizedType -> valueValue = autoReadParameterizedType(instance, valueType)
+                                                            is ParameterizedType -> valueValue =
+                                                                autoReadParameterizedType(instance, valueType)
                                                             else -> println("not support map value")
                                                         }
                                                         map.put(keyValue, valueValue)
@@ -922,12 +946,14 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                                                     for (i in 0 until mapSize) {
                                                         when (keyType) {
                                                             is Class<*> -> keyValue = get(keyType, instance)
-                                                            is ParameterizedType -> keyValue = autoReadParameterizedType(instance, keyType)
+                                                            is ParameterizedType -> keyValue =
+                                                                autoReadParameterizedType(instance, keyType)
                                                             else -> println("not support map key")
                                                         }
                                                         when (valueType) {
                                                             is Class<*> -> valueValue = get(valueType, instance)
-                                                            is ParameterizedType -> valueValue = autoReadParameterizedType(instance, valueType)
+                                                            is ParameterizedType -> valueValue =
+                                                                autoReadParameterizedType(instance, valueType)
                                                             else -> println("not support map value")
                                                         }
                                                         map.put(keyValue, valueValue)
@@ -935,16 +961,10 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
 
                                                 }
                                             }
-                                            val accessible = field.isAccessible
-                                            if (!field.isAccessible) field.isAccessible = true
                                             field.set(instance, map)
-                                            field.isAccessible = accessible
                                         }
                                     } else {
-                                        val accessible = field.isAccessible
-                                        if (!field.isAccessible) field.isAccessible = true
                                         field.set(instance, get(field.type, instance))
-                                        field.isAccessible =accessible
                                     }
                                 }
                             } //nil check
@@ -985,8 +1005,18 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                     }
                     is ParameterizedType -> {
                         when (list) {
-                            is ArrayList<Any?> -> for (i in 0 until listSize) list.add(autoReadParameterizedType(instance, listType))
-                            is LinkedList<Any?> -> for (i in 0 until listSize) list.add(autoReadParameterizedType(instance, listType))
+                            is ArrayList<Any?> -> for (i in 0 until listSize) list.add(
+                                autoReadParameterizedType(
+                                    instance,
+                                    listType
+                                )
+                            )
+                            is LinkedList<Any?> -> for (i in 0 until listSize) list.add(
+                                autoReadParameterizedType(
+                                    instance,
+                                    listType
+                                )
+                            )
                             else -> {
                                 list = ArrayList()
                                 for (i in 0 until listSize) list.add(autoReadParameterizedType(instance, listType))
@@ -1166,6 +1196,6 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
         private const val SIMPLE_TYPE_ARRAY = 20
         private const val SIMPLE_TYPE_ANY = 21
 
-        private val fieldCache = hashMapOf<Class<*>,List<Field>>()
+        private val fieldCache = hashMapOf<Class<*>, List<Field>>()
     }
 }
