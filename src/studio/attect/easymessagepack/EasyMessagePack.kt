@@ -664,6 +664,7 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                         val accessible = field.isAccessible
                         if (!field.isAccessible) field.isAccessible = true
                         field.get(any).let {
+                            field.isAccessible = accessible
                             if (simpleTypeByClass(field.type) != null) {
                                 if (it == null) {
                                     packer.packNil()
@@ -678,7 +679,6 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                                 }
                             }
                         }
-                        field.isAccessible = accessible
                     }
                 }
             }
@@ -838,9 +838,6 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                             if (field.name != "this\$0" && unpacker.hasNext() && !Modifier.isFinal(field.modifiers) && !Modifier.isTransient(field.modifiers)) {
 //                                println("get field:${field.name} ${field.genericType.rawTypeName}")
                                 if (!unpacker.tryUnpackNil()) {
-                                    val accessible = field.isAccessible
-                                    if (!field.isAccessible) field.isAccessible = true
-
                                     if (field.genericType is ParameterizedType) {
                                         val parameterizedType = field.genericType as ParameterizedType
                                         val fieldType = simpleTypeByClass(field.type)
@@ -888,7 +885,10 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
                                                 }
                                                 else -> println("not support ParameterizedType:$parameterizedType [0]")
                                             }
+                                            val accessible = field.isAccessible
+                                            if (!field.isAccessible) field.isAccessible = true
                                             field.set(instance, list)
+                                            field.isAccessible = accessible
                                         } else if (fieldType == SIMPLE_TYPE_MAP) {
                                             var map = fieldClass.newInstance() as Map<Any?, Any?>
                                             val mapSize = unpacker.unpackMapHeader()
@@ -935,14 +935,17 @@ class EasyMessagePack(val packer: MessagePacker = MessagePack.newDefaultBufferPa
 
                                                 }
                                             }
+                                            val accessible = field.isAccessible
+                                            if (!field.isAccessible) field.isAccessible = true
                                             field.set(instance, map)
-
+                                            field.isAccessible = accessible
                                         }
                                     } else {
+                                        val accessible = field.isAccessible
+                                        if (!field.isAccessible) field.isAccessible = true
                                         field.set(instance, get(field.type, instance))
+                                        field.isAccessible =accessible
                                     }
-
-                                    field.isAccessible = accessible
                                 }
                             } //nil check
                         }
